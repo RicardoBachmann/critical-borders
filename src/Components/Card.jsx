@@ -4,12 +4,12 @@ export default function Card(props) {
   return (
     <>
       <div className="card--container">
-        <h1>Countries:</h1>
-        <ul className="card--countries">
+        <div className="card--countries">
           {props.countries.map((country, index) => (
-            <li key={index}>{country}</li>
+            <p key={index}>{country}</p>
           ))}
-        </ul>
+        </div>
+        <p>Current status: {props.isConflictZone ? "💥" : "🏳️"}</p>
         <p className="card--description">{props.description}</p>
         <ul>
           {props.issues.map((issue, index) => (
