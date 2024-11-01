@@ -1,9 +1,12 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import mapboxgl from "mapbox-gl";
 
 import Card from "./Components/Card.jsx";
 import data from "./data.js";
 import "./App.css";
+
+const INITIAL_CENTER = [-74.0242, 40.6941];
+const INITIAL_ZOOM = 10.12;
 
 function App() {
   // first ref will presist the map instance
@@ -11,13 +14,28 @@ function App() {
   // second ref exposes the map container's element
   const mapContainerRef = useRef();
 
+  const [center, setCenter] = useState(INITIAL_CENTER);
+
+  const [zoom, setZoom] = useState(INITIAL_ZOOM);
+
   useEffect(() => {
     mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
     mapRef.current = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: "mapbox://styles/mapbox/streets-v11",
-      center: [13.405, 52.52],
-      zoom: 9,
+
+      center: center,
+      zoom: zoom,
+    });
+
+    mapRef.current.on("move", () => {
+      // set an event listener that fires repeatedly during an animated transition
+      // get the current center coordinates and zoom level from the map
+      const mapCenter = mapRef.current.getCenter();
+      const mapZoom = mapRef.current.getZoom();
+
+      // update state
+      setCenter([mapCenter.lng, mapCenter.lat]);
+      setZoom(mapZoom);
     });
 
     return () => {
@@ -32,6 +50,10 @@ function App() {
     <>
       <div id="map-container" ref={mapContainerRef}></div>
       <section>{displayData}</section>
+      <div className="sidebar">
+        Longitude: {center[0].toFixed(4)} | Latitude: {center[1].toFixed(4)} |
+        Zoom: {zoom.toFixed(2)}
+      </div>
     </>
   );
 }
