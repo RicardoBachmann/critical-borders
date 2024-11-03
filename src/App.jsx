@@ -50,8 +50,22 @@ function App() {
     });
   };
 
+  const flyToLocation = (coordinates) => {
+    mapRef.current.flyTo({
+      center: [coordinates.longitude, coordinates.latitude],
+      zoom: 10,
+      essential: true,
+    });
+  };
+
   const displayData = data.map((item) => {
-    return <Card key={item.id} {...item} />;
+    return (
+      <Card
+        key={item.id}
+        {...item}
+        onClick={() => flyToLocation(item.coordinates)}
+      />
+    );
   });
   return (
     <>
