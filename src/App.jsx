@@ -43,16 +43,29 @@ function App() {
     };
   }, []);
 
+  const handleButtonClick = () => {
+    mapRef.current.flyTo({
+      center: INITIAL_CENTER,
+      zoom: INITIAL_ZOOM,
+    });
+  };
+
   const displayData = data.map((item) => {
     return <Card key={item.id} {...item} />;
   });
   return (
     <>
-      <div id="map-container" ref={mapContainerRef}></div>
-      <section>{displayData}</section>
-      <div className="sidebar">
-        Longitude: {center[0].toFixed(4)} | Latitude: {center[1].toFixed(4)} |
-        Zoom: {zoom.toFixed(2)}
+      <div id="map-container" ref={mapContainerRef}>
+        <section className="control-panel">
+          <div className="sidebar">
+            Longitude: {center[0].toFixed(4)} | Latitude: {center[1].toFixed(4)}{" "}
+            | Zoom: {zoom.toFixed(2)}
+          </div>
+          <button className="reset-button" onClick={handleButtonClick}>
+            Reset
+          </button>
+          <div>{displayData}</div>
+        </section>
       </div>
     </>
   );
