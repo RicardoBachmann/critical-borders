@@ -4,19 +4,30 @@ import mapboxgl from "mapbox-gl";
 import Card from "./Components/Card.jsx";
 import data from "./data.js";
 import "./App.css";
+import MarkerLayer from "./Components/Marker.jsx";
 
 const INITIAL_CENTER = [-74.0242, 40.6941];
 const INITIAL_ZOOM = 10.12;
 
 function App() {
-  // first ref will presist the map instance
+  // First ref will presist the map instance
   const mapRef = useRef();
-  // second ref exposes the map container's element
+  // Second ref exposes the map container's element
   const mapContainerRef = useRef();
+  // To store and remove markers
+  const markersRef = useRef([]);
 
   const [center, setCenter] = useState(INITIAL_CENTER);
-
   const [zoom, setZoom] = useState(INITIAL_ZOOM);
+  // State to hold the zone data and the display mode (all zones or conflict zones only)
+  const [displayConflictZones, setDisplayConflictZones] = useState(false);
+  // Track selected marker
+  const [selectedMarkerId, setSelectedMarkerId] = useState(null);
+
+  // Filter data based on displayConflictZones
+  const filteredData = displayConflictZones
+    ? data.filter((item) => item.isConflictZone)
+    : data;
 
   useEffect(() => {
     mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -28,8 +39,8 @@ function App() {
     });
 
     mapRef.current.on("move", () => {
-      // set an event listener that fires repeatedly during an animated transition
-      // get the current center coordinates and zoom level from the map
+      // Set an event listener that fires repeatedly during an animated transition
+      // Get the current center coordinates and zoom level from the map
       const mapCenter = mapRef.current.getCenter();
       const mapZoom = mapRef.current.getZoom();
 
@@ -53,19 +64,10 @@ function App() {
   const flyToLocation = (coordinates) => {
     mapRef.current.flyTo({
       center: [coordinates.longitude, coordinates.latitude],
-
       zoom: 10,
       essential: true,
     });
   };
-
-  // State to hold the zone data and the display mode (all zones or conflict zones only)
-  const [displayConflictZones, setDisplayConflictZones] = useState(false);
-
-  // Filter data based on displayConflictZones
-  const filteredData = displayConflictZones
-    ? data.filter((item) => item.isConflictZone)
-    : data;
 
   const selectConflictZones = () => setDisplayConflictZones(true);
   const selectAllZones = () => setDisplayConflictZones(false);
@@ -92,6 +94,16 @@ function App() {
             ))}
           </div>
         </section>
+        {filteredData.map((item) => (
+          <MarkerLayer
+            key={item.id}
+            map={mapRef.current}
+            latitude={item.coordinates.latitude}
+            longitude={item.coordinates.longitude}
+            onClick={() => setSelectedMarkerId(item.id)}
+            isSelected={selectedMarkerId === item.id}
+          />
+        ))}
       </div>
     </>
   );
