@@ -22,7 +22,7 @@ function App() {
     mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
     mapRef.current = new mapboxgl.Map({
       container: mapContainerRef.current,
-
+      style: "mapbox://styles/mapbox/streets-v11",
       center: center,
       zoom: zoom,
     });
@@ -53,20 +53,22 @@ function App() {
   const flyToLocation = (coordinates) => {
     mapRef.current.flyTo({
       center: [coordinates.longitude, coordinates.latitude],
+
       zoom: 10,
       essential: true,
     });
   };
 
-  const displayData = data.map((item) => {
-    return (
-      <Card
-        key={item.id}
-        {...item}
-        onClick={() => flyToLocation(item.coordinates)}
-      />
-    );
-  });
+  // State to hold the zone data and the display mode (all zones or conflict zones only)
+  const [displayConflictZones, setDisplayConflictZones] = useState(false);
+
+  // Filter data based on displayConflictZones
+  const filteredData = displayConflictZones
+    ? data.filter((item) => item.isConflictZone)
+    : data;
+
+  const selectConflictZones = () => setDisplayConflictZones(true);
+  const selectAllZones = () => setDisplayConflictZones(false);
   return (
     <>
       <div id="map-container" ref={mapContainerRef}>
@@ -75,10 +77,20 @@ function App() {
             Longitude: {center[0].toFixed(4)} | Latitude: {center[1].toFixed(4)}{" "}
             | Zoom: {zoom.toFixed(2)}
           </div>
+          <button onClick={selectConflictZones}>Conflict Zones</button>
+          <button onClick={selectAllZones}>All Zones</button>
           <button className="reset-button" onClick={handleButtonClick}>
             Reset
           </button>
-          <div>{displayData}</div>
+          <div>
+            {filteredData.map((item) => (
+              <Card
+                key={item.id}
+                countries={item.countries}
+                onClick={() => flyToLocation(item.coordinates)}
+              />
+            ))}
+          </div>
         </section>
       </div>
     </>
