@@ -35,14 +35,14 @@ function App() {
     });
 
     mapRef.current.on("load", () => {
-      new mapboxgl.Marker({
-        color: "#FFFFFF",
-        draggable: true,
-      })
-        .setLngLat(INITIAL_CENTER)
-        .addTo(mapRef.current);
-
-      console.log("Marker added at:", INITIAL_CENTER);
+      filteredData.forEach((item) => {
+        new mapboxgl.Marker({
+          color: "#FFFFFF",
+          draggable: true,
+        })
+          .setLngLat([item.coordinates.longitude, item.coordinates.latitude])
+          .addTo(mapRef.current);
+      });
     });
 
     mapRef.current.on("move", () => {
@@ -59,7 +59,7 @@ function App() {
     return () => {
       mapRef.current.remove();
     };
-  }, []);
+  }, [filteredData]);
 
   const handleButtonClick = () => {
     mapRef.current.flyTo({
