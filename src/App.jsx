@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from "react";
 import mapboxgl from "mapbox-gl";
-import { Marker } from "react-map-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
 
 import Card from "./Components/Card.jsx";
 import data from "./data.js";
@@ -14,15 +14,11 @@ function App() {
   const mapRef = useRef();
   // Second ref exposes the map container's element
   const mapContainerRef = useRef();
-  // To store and remove markers
-  const markersRef = useRef([]);
 
   const [center, setCenter] = useState(INITIAL_CENTER);
   const [zoom, setZoom] = useState(INITIAL_ZOOM);
   // State to hold the zone data and the display mode (all zones or conflict zones only)
   const [displayConflictZones, setDisplayConflictZones] = useState(false);
-  // Track selected marker
-  const [selectedMarkerId, setSelectedMarkerId] = useState(null);
 
   // Filter data based on displayConflictZones
   const filteredData = displayConflictZones
@@ -33,9 +29,20 @@ function App() {
     mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
     mapRef.current = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: "mapbox://styles/mapbox/streets-v11",
+      style: "mapbox://styles/mapbox/satellite-v9",
       center: center,
       zoom: zoom,
+    });
+
+    mapRef.current.on("load", () => {
+      new mapboxgl.Marker({
+        color: "#FFFFFF",
+        draggable: true,
+      })
+        .setLngLat(INITIAL_CENTER)
+        .addTo(mapRef.current);
+
+      console.log("Marker added at:", INITIAL_CENTER);
     });
 
     mapRef.current.on("move", () => {
@@ -73,7 +80,7 @@ function App() {
   const selectAllZones = () => setDisplayConflictZones(false);
   return (
     <>
-      <Map id="map-container" ref={mapContainerRef}>
+      <div id="map-container" ref={mapContainerRef}>
         <section className="control-panel">
           <div className="sidebar">
             Longitude: {center[0].toFixed(4)} | Latitude: {center[1].toFixed(4)}{" "}
@@ -92,14 +99,9 @@ function App() {
                 onClick={() => flyToLocation(item.coordinates)}
               />
             ))}
-            <Marker
-              longitude={9.993682}
-              latitude={53.551086}
-              anchor="bottom"
-            ></Marker>
           </div>
         </section>
-      </Map>
+      </div>
     </>
   );
 }
