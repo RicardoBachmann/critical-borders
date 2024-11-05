@@ -1,10 +1,10 @@
 import { useRef, useEffect, useState } from "react";
 import mapboxgl from "mapbox-gl";
+import { Marker } from "react-map-gl";
 
 import Card from "./Components/Card.jsx";
 import data from "./data.js";
 import "./App.css";
-import MarkerLayer from "./Components/Marker.jsx";
 
 const INITIAL_CENTER = [-74.0242, 40.6941];
 const INITIAL_ZOOM = 10.12;
@@ -73,7 +73,7 @@ function App() {
   const selectAllZones = () => setDisplayConflictZones(false);
   return (
     <>
-      <div id="map-container" ref={mapContainerRef}>
+      <Map id="map-container" ref={mapContainerRef}>
         <section className="control-panel">
           <div className="sidebar">
             Longitude: {center[0].toFixed(4)} | Latitude: {center[1].toFixed(4)}{" "}
@@ -92,19 +92,14 @@ function App() {
                 onClick={() => flyToLocation(item.coordinates)}
               />
             ))}
+            <Marker
+              longitude={9.993682}
+              latitude={53.551086}
+              anchor="bottom"
+            ></Marker>
           </div>
         </section>
-        {filteredData.map((item) => (
-          <MarkerLayer
-            key={item.id}
-            map={mapRef.current}
-            latitude={item.coordinates.latitude}
-            longitude={item.coordinates.longitude}
-            onClick={() => setSelectedMarkerId(item.id)}
-            isSelected={selectedMarkerId === item.id}
-          />
-        ))}
-      </div>
+      </Map>
     </>
   );
 }
