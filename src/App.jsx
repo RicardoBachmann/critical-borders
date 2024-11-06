@@ -10,12 +10,10 @@ const INITIAL_CENTER = [-74.0242, 40.6941];
 const INITIAL_ZOOM = 10.12;
 
 function App() {
-  // First ref will presist the map instance
-  const mapRef = useRef();
-  // Second ref exposes the map container's element
-  const mapContainerRef = useRef();
-  // New ref to manage markers
-  const markersRef = useRef([]);
+  const mapRef = useRef(); // First ref will presist the map instance
+  const mapContainerRef = useRef(); // Second ref exposes the map container's element
+  const markersRef = useRef([]); // New ref to manage markers
+  const popupRef = useRef(null); // Single popup instance
 
   const [center, setCenter] = useState(INITIAL_CENTER);
   const [zoom, setZoom] = useState(INITIAL_ZOOM);
@@ -52,10 +50,10 @@ function App() {
     };
   }, []);
 
-  // Effect to update markers on data change
+  // Effect to update markers and re-use a single popup
   useEffect(() => {
     // Clear existing markers
-    markersRef.current.forEach((marker) => marker.remove());
+    markersRef.current.forEach(({ marker }) => marker.remove());
     markersRef.current = []; // Reset marker array
 
     // Add new markers
@@ -67,27 +65,36 @@ function App() {
         .setLngLat([item.coordinates.longitude, item.coordinates.latitude])
         .addTo(mapRef.current);
 
-      // Create the popup with the description but don't add it to the map yes
-
-      // Add click event to marker to show the popup
-      marker.getElement().addEventListener("click", () => {
+      const handleClick = () => {
+        // Create a new popup instance for each click
         const popup = new mapboxgl.Popup({
           offset: [0, -40],
-          closeOnClick: false,
+          closeOnClick: true,
+          maxWidth: "200px",
         })
-          .setHTML(`<p>${item.description}</p>`)
-          .setMaxWidth("200px")
           .setLngLat(marker.getLngLat())
+          .setHTML(`<p>${item.description}</p>`)
           .addTo(mapRef.current);
 
-        // Ensure any open popup closes on next click
-        popup.on("close", () => {
-          popup.remove();
-        });
-      });
+        // Close the popup when its no longer needed
+        popup.on("close", () => popup.remove());
+      };
 
-      markersRef.current.push(marker); // Save new marker reference
+      // Attach click listener to marker element
+      marker.getElement().addEventListener("click", handleClick);
+
+      // Store marker and its click handler for cleanup
+      markersRef.current.push({ marker, handleClick });
     });
+    // Cleanup on component unmount or data change
+    return () => {
+      markersRef.current.forEach(({ marker, handleClick }) => {
+        marker.getElement().removeEventListener("click", handleClick);
+        marker.remove();
+      });
+      markersRef.current = [];
+      if (popupRef.current) popupRef.current.remove();
+    };
   }, [filteredData]);
 
   const handleButtonClick = () => {
