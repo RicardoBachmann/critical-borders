@@ -14,6 +14,8 @@ function App() {
   const mapRef = useRef();
   // Second ref exposes the map container's element
   const mapContainerRef = useRef();
+  // New ref to manage markers
+  const markersRef = useRef([]);
 
   const [center, setCenter] = useState(INITIAL_CENTER);
   const [zoom, setZoom] = useState(INITIAL_ZOOM);
@@ -34,17 +36,6 @@ function App() {
       zoom: zoom,
     });
 
-    mapRef.current.on("load", () => {
-      filteredData.forEach((item) => {
-        new mapboxgl.Marker({
-          color: "#FFFFFF",
-          draggable: true,
-        })
-          .setLngLat([item.coordinates.longitude, item.coordinates.latitude])
-          .addTo(mapRef.current);
-      });
-    });
-
     mapRef.current.on("move", () => {
       // Set an event listener that fires repeatedly during an animated transition
       // Get the current center coordinates and zoom level from the map
@@ -59,6 +50,25 @@ function App() {
     return () => {
       mapRef.current.remove();
     };
+  }, []);
+
+  // Effect to update markers on data change
+  useEffect(() => {
+    // Clear existing markers
+    markersRef.current.forEach((marker) => marker.remove());
+    markersRef.current = []; // Reset marker array
+
+    // Add new markers
+    filteredData.forEach((item) => {
+      const marker = new mapboxgl.Marker({
+        color: "red",
+        draggable: true,
+      })
+        .setLngLat([item.coordinates.longitude, item.coordinates.latitude])
+        .addTo(mapRef.current);
+
+      markersRef.current.push(marker); // Save new marker reference
+    });
   }, [filteredData]);
 
   const handleButtonClick = () => {
