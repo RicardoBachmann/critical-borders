@@ -67,6 +67,25 @@ function App() {
         .setLngLat([item.coordinates.longitude, item.coordinates.latitude])
         .addTo(mapRef.current);
 
+      // Create the popup with the description but don't add it to the map yes
+
+      // Add click event to marker to show the popup
+      marker.getElement().addEventListener("click", () => {
+        const popup = new mapboxgl.Popup({
+          offset: [0, -40],
+          closeOnClick: false,
+        })
+          .setHTML(`<p>${item.description}</p>`)
+          .setMaxWidth("200px")
+          .setLngLat(marker.getLngLat())
+          .addTo(mapRef.current);
+
+        // Ensure any open popup closes on next click
+        popup.on("close", () => {
+          popup.remove();
+        });
+      });
+
       markersRef.current.push(marker); // Save new marker reference
     });
   }, [filteredData]);
