@@ -80,3 +80,35 @@
   border-radius: 10px;
   cursor: pointer;
 }
+
+.custom-popup {
+  font-family: monospace;
+  padding: 10px;
+  color: white;
+  background-color: rgb(35 55 75 / 90%);
+  border-radius: 5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.custom-popup h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  color: red; /* Custom color for the title */
+}
+
+.custom-popup p {
+  font-size: 0.7rem;
+  margin: 5px 0 0;
+}
+
+.mapboxgl-popup-content {
+  padding: 0 !important; /* Override default padding */
+  border-radius: 8px; /* Customize the popup's rounded corners */
+}
+
+.mapboxgl-popup-anchor-top .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-left .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-right .mapboxgl-popup-tip {
+  display: none;
+}

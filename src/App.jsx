@@ -45,6 +45,14 @@ function App() {
       setZoom(mapZoom);
     });
 
+    // Close popup when clicking on the map
+    mapRef.current.on("click", () => {
+      if (popupRef.current) {
+        popupRef.current.remove();
+        popupRef.current = null;
+      }
+    });
+
     return () => {
       mapRef.current.remove();
     };
@@ -59,42 +67,44 @@ function App() {
     // Add new markers
     filteredData.forEach((item) => {
       const marker = new mapboxgl.Marker({
-        color: "red",
-        draggable: true,
+        className: "marker",
+        draggable: false,
       })
         .setLngLat([item.coordinates.longitude, item.coordinates.latitude])
         .addTo(mapRef.current);
 
-      const handleClick = () => {
-        // Create a new popup instance for each click
-        const popup = new mapboxgl.Popup({
+      // Handle marker click to display popup
+      marker.getElement().addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent map click event from firing
+
+        // Close any open popup
+        if (popupRef.current) {
+          popupRef.current.remove();
+        }
+        // Add custom HTML
+        const popupContent = `
+          <div class="custom-popup">
+            <h3>${item.countries.join(" & ")}</h3>
+            <p>${item.issues}</p>
+              <br/>
+            <p>${item.description}</p>
+          </div>
+        `;
+
+        // Create a new popup
+        popupRef.current = new mapboxgl.Popup({
+          className: "marker-popup",
           offset: [0, -40],
           closeOnClick: true,
           maxWidth: "200px",
         })
           .setLngLat(marker.getLngLat())
-          .setHTML(`<p>${item.description}</p>`)
+          .setHTML(popupContent)
           .addTo(mapRef.current);
-
-        // Close the popup when its no longer needed
-        popup.on("close", () => popup.remove());
-      };
-
-      // Attach click listener to marker element
-      marker.getElement().addEventListener("click", handleClick);
-
-      // Store marker and its click handler for cleanup
-      markersRef.current.push({ marker, handleClick });
-    });
-    // Cleanup on component unmount or data change
-    return () => {
-      markersRef.current.forEach(({ marker, handleClick }) => {
-        marker.getElement().removeEventListener("click", handleClick);
-        marker.remove();
       });
-      markersRef.current = [];
-      if (popupRef.current) popupRef.current.remove();
-    };
+
+      markersRef.current.push({ marker });
+    });
   }, [filteredData]);
 
   const handleButtonClick = () => {
