@@ -77,6 +77,15 @@ function App() {
       marker.getElement().addEventListener("click", (e) => {
         e.stopPropagation(); // Prevent map click event from firing
 
+        // Center the map on the marker's location
+        mapRef.current.flyTo({
+          center: [item.coordinates.longitude, item.coordinates.latitude],
+          zoom: mapRef.current.getZoom(),
+          essential: true,
+          curve: 1.5,
+          duration: 2000,
+        });
+
         // Close any open popup
         if (popupRef.current) {
           popupRef.current.remove();
@@ -101,6 +110,12 @@ function App() {
           .setLngLat(marker.getLngLat())
           .setHTML(popupContent)
           .addTo(mapRef.current);
+      });
+
+      // Handle double click on marker to fly to location
+      marker.getElement().addEventListener("dblclick", (e) => {
+        e.stopPropagation();
+        flyToLocation(item.coordinates);
       });
 
       markersRef.current.push({ marker });
